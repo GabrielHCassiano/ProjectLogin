@@ -9,6 +9,9 @@ public class Logar : MonoBehaviour
     [SerializeField] private TMP_InputField emailInputField;
     [SerializeField] private TMP_InputField passwordInputField;
 
+    [SerializeField] private GameObject loginPanel;
+    [SerializeField] private GameObject musicPanel;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -23,6 +26,12 @@ public class Logar : MonoBehaviour
 
     public void LoginButton()
     {
-        StartCoroutine(Main.instance.Web.LoginCooldown(emailInputField.text, passwordInputField.text));
+        StartCoroutine(Main.instance.Web.LoginCooldown(emailInputField.text, passwordInputField.text, this));
+    }
+
+    public void LoginStart()
+    {
+        musicPanel.SetActive(true);
+        loginPanel.SetActive(false);
     }
 }

@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Networking;
@@ -11,6 +12,7 @@ public class Web : MonoBehaviour
     private string getUrl = "http://localhost/Web/GetUsers.php";
     private string loginUrl = "http://localhost/Web/Login.php";
     private string registerUrl = "http://localhost/Web/Register.php";
+    private string uploadUrl = "http://localhost/Web/UploadMusic.php";
 
     // Start is called before the first frame update
     void Start()
@@ -38,7 +40,7 @@ public class Web : MonoBehaviour
         }
     }
 
-    public IEnumerator LoginCooldown(string email, string password)
+    public IEnumerator LoginCooldown(string email, string password, Logar login)
     {
         WWWForm form = new WWWForm();
         form.AddField("loginEmail", email);
@@ -52,7 +54,10 @@ public class Web : MonoBehaviour
                 print("error");
 
             else
+            {
                 print(request.downloadHandler.text);
+                login.LoginStart();
+            }
         }
     }
 
@@ -72,6 +77,30 @@ public class Web : MonoBehaviour
 
             else
                 print(request.downloadHandler.text);
+        }
+    }
+
+    public IEnumerator UploadMusic(string path)
+    {
+        WWWForm form = new WWWForm();
+
+        form.AddField("idUser", "1");
+        form.AddBinaryData("music", File.ReadAllBytes(path), "Bomdia");
+
+        print(path);
+
+        using (UnityWebRequest request = UnityWebRequest.Post(uploadUrl, form))
+        {
+            yield return request.SendWebRequest();
+
+            if (request.result == UnityWebRequest.Result.ConnectionError)
+            {
+                print("error");
+            }
+            else
+            {
+                print(request.downloadHandler.text);
+            }
         }
     }
 }
