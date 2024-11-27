@@ -8,6 +8,8 @@ using UnityEngine.UI;
 using UnityEngine.Audio;
 using TagLib;
 using static UnityEngine.UIElements.UxmlAttributeDescription;
+using System.IO;
+using UnityEngine.Rendering;
 
 public class MusicManager : MonoBehaviour
 {
@@ -16,10 +18,17 @@ public class MusicManager : MonoBehaviour
     [SerializeField] private GameObject musicPrefab;
     [SerializeField] private GameObject parentMusic;
 
-    [SerializeField] private List<AudioClip> musicPlaylist;
+    [SerializeField] private List<PlayMusic> musicPlaylist;
 
     [SerializeField] private AudioSource musicSource;
     [SerializeField] private TextMeshProUGUI nameMusic;
+    [SerializeField] private TextMeshProUGUI nameMusicStatus;
+    [SerializeField] private TextMeshProUGUI grounpingMusic;
+    [SerializeField] private TextMeshProUGUI albumMusic;
+    [SerializeField] private TextMeshProUGUI genresMusic;
+    [SerializeField] private RawImage picturesMusic;
+    [SerializeField] private TextMeshProUGUI lyricsMusic;
+
     [SerializeField] private Slider musicSlider;
 
     [SerializeField] private GameObject playButton;
@@ -49,7 +58,7 @@ public class MusicManager : MonoBehaviour
         VolumeImage();
     }
 
-    public List<AudioClip> MusicPlaylist
+    public List<PlayMusic> MusicPlaylist
     {
         get { return musicPlaylist; }
         set { musicPlaylist = value; }
@@ -65,6 +74,41 @@ public class MusicManager : MonoBehaviour
     {
         get { return nameMusic; }
         set { nameMusic = value; }
+    }
+
+    public TextMeshProUGUI NameMusicStatus
+    {
+        get { return nameMusicStatus; }
+        set { nameMusicStatus = value; }
+    }
+
+    public TextMeshProUGUI GroupingMusic
+    {
+        get { return grounpingMusic; }
+        set { grounpingMusic = value; }
+    }
+
+    public TextMeshProUGUI AlbumMusic
+    {
+        get { return albumMusic; }
+        set { albumMusic = value; }
+    }
+    public TextMeshProUGUI GenresMusic
+    {
+        get { return genresMusic; }
+        set { genresMusic = value; }
+    }
+
+    public RawImage PicturesMusic
+    {
+        get { return picturesMusic; }
+        set { picturesMusic = value; }
+    }
+
+    public TextMeshProUGUI LyricsMusic
+    {
+        get { return lyricsMusic; }
+        set { lyricsMusic = value; }
     }
 
     public int CurrentIdMusic
@@ -161,16 +205,17 @@ public class MusicManager : MonoBehaviour
         {
             if (currentIdMusic - 1 < 0)
             {
-                musicSource.clip = musicPlaylist[musicPlaylist.Count - 1];
+                musicSource.clip = musicPlaylist[musicPlaylist.Count - 1].MusicClip;
                 currentIdMusic = musicPlaylist.Count - 1;
             }
             else
             {
-                musicSource.clip = musicPlaylist[currentIdMusic - 1];
+                musicSource.clip = musicPlaylist[currentIdMusic - 1].MusicClip;
                 currentIdMusic -= 1;
             }
 
             PlayMusicLogic();
+            musicPlaylist[currentIdMusic].SetStatus();
             musicSource.time = 0;
         }
     }
@@ -181,16 +226,17 @@ public class MusicManager : MonoBehaviour
         {
             if (currentIdMusic + 1 > musicPlaylist.Count - 1)
             {
-                musicSource.clip = musicPlaylist[0];
+                musicSource.clip = musicPlaylist[0].MusicClip;
                 currentIdMusic = 0;
             }
             else
             {
-                musicSource.clip = musicPlaylist[currentIdMusic + 1];
+                musicSource.clip = musicPlaylist[currentIdMusic + 1].MusicClip;
                 currentIdMusic += 1;
             }
 
             PlayMusicLogic();
+            musicPlaylist[currentIdMusic].SetStatus();
             musicSource.time = 0;
         }
     }
@@ -221,9 +267,30 @@ public class MusicManager : MonoBehaviour
 
                 var requestMusic = DownloadHandlerAudioClip.GetContent(request);
                 PlayMusic playMusic = Instantiate(musicPrefab, parentMusic.transform).GetComponent<PlayMusic>();
+
+                playMusic.MusicClip = requestMusic;
+
                 playMusic.NameMusic.text = tagFile.Tag.Title;
+                playMusic.GroupingMusic.text = tagFile.Tag.Grouping;
+                playMusic.AlbumText = tagFile.Tag.Album;
+
+                if (tagFile.Tag.Genres.Length > 0)
+                    playMusic.GenresText = tagFile.Tag.Genres[0];
+
+                if (tagFile.Tag.Pictures.Length > 0)
+                {
+                    TagLib.IPicture pic = tagFile.Tag.Pictures[0];
+                    MemoryStream ms = new MemoryStream(pic.Data.Data);
+                    ms.Seek(0, SeekOrigin.Begin);
+                    Texture2D tex = new Texture2D(2, 2);
+                    tex.LoadImage(ms.ToArray());
+                    playMusic.PicturesImage = tex;
+                }
+
+                playMusic.LyricsText = tagFile.Tag.Lyrics;
+
                 playMusic.IdMusic = musicPlaylist.Count;
-                musicPlaylist.Add(requestMusic);
+                musicPlaylist.Add(playMusic);
 
                 StartCoroutine(Main.instance.Web.UploadMusic(path));
             }
