@@ -6,26 +6,37 @@ using UnityEngine.UI;
 
 public class PlayMusic : MonoBehaviour
 {
-    [SerializeField] private AudioSource musicSource;
+    private int idMusic;
     [SerializeField] private TextMeshProUGUI nameMusic;
-    [SerializeField] private Slider musicSlider;
+    [SerializeField] private TextMeshProUGUI timeMusic;
+
+    private MusicManager musicManager;
 
     // Start is called before the first frame update
     void Start()
     {
-        
+        musicManager = FindObjectOfType<MusicManager>();
+        StatusMusic();
     }
 
     // Update is called once per frame
     void Update()
     {
-        StatusMusic();
+
     }
 
-    public AudioSource MusicSource
+    public void StatusMusic()
     {
-        get { return musicSource; } 
-        set { musicSource = value; }
+        float minutes = (int) (musicManager.MusicPlaylist[idMusic].length / 60f);
+        float seconds = (int) (musicManager.MusicPlaylist[idMusic].length - minutes * 60f);
+
+        timeMusic.text = string.Format("{0:00}:{1:00}", minutes, seconds);
+    }
+
+    public int IdMusic
+    {
+        get { return idMusic; }
+        set { idMusic = value; }
     }
 
     public TextMeshProUGUI NameMusic
@@ -34,30 +45,12 @@ public class PlayMusic : MonoBehaviour
         set { nameMusic = value; }
     }
 
-    public Slider MusicSlider
+    public void StartMusicLogic()
     {
-        get { return musicSlider; }
-        set { musicSlider = value; }
-    }
-
-    public void StatusMusic()
-    {
-        musicSlider.value = musicSource.time / musicSource.clip.length;
-    }
-
-    public void PlayMusicLogic()
-    {
-        musicSource.Play();
-    }
-
-    public void StopMusicLogic()
-    {
-        musicSource.Stop();
-    }
-
-    public void ChangeAudioTime()
-    {
-        musicSource.time = musicSource.clip.length * musicSlider.value;
+        musicManager.MusicSource.clip = musicManager.MusicPlaylist[idMusic];
+        musicManager.PlayMusicLogic();
+        musicManager.NameMusic.text = nameMusic.text;
+        musicManager.CurrentIdMusic = idMusic;
     }
 
 }

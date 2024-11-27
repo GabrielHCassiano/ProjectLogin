@@ -56,8 +56,11 @@ public class Web : MonoBehaviour
             else
             {
                 print(request.downloadHandler.text);
-                login.LoginStart();
+
+                if (request.downloadHandler.text == "connected Successfully Login Success.")
+                    login.LoginStart();
             }
+
         }
     }
 
@@ -86,8 +89,6 @@ public class Web : MonoBehaviour
 
         form.AddField("idUser", "1");
         form.AddBinaryData("music", File.ReadAllBytes(path), "Bomdia");
-
-        print(path);
 
         using (UnityWebRequest request = UnityWebRequest.Post(uploadUrl, form))
         {
