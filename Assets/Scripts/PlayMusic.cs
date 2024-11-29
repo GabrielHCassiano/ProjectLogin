@@ -8,10 +8,12 @@ public class PlayMusic : MonoBehaviour
 {
     private int idMusic;
 
+    private string arquivo;
+
     [SerializeField] private AudioClip musicClip;
 
     [SerializeField] private TextMeshProUGUI nameMusic;
-    [SerializeField] private TextMeshProUGUI groupingMusic;
+    [SerializeField] private TextMeshProUGUI artistsMusic;
     [SerializeField] private string albumText;
     [SerializeField] private string genresText;
     [SerializeField] private Texture2D picturesImage;
@@ -42,6 +44,12 @@ public class PlayMusic : MonoBehaviour
         timeMusic.text = string.Format("{0:00}:{1:00}", minutes, seconds);
     }
 
+    public string Arquivo
+    {
+        get { return arquivo; }
+        set { arquivo = value; }
+    }
+
     public int IdMusic
     {
         get { return idMusic; }
@@ -60,10 +68,10 @@ public class PlayMusic : MonoBehaviour
         set { nameMusic = value; }
     }
 
-    public TextMeshProUGUI GroupingMusic
+    public TextMeshProUGUI ArtistsMusic
     {
-        get { return groupingMusic; }
-        set { groupingMusic = value; }
+        get { return artistsMusic; }
+        set { artistsMusic = value; }
     }
 
     public string AlbumText
@@ -95,6 +103,7 @@ public class PlayMusic : MonoBehaviour
         musicManager.PlayMusicLogic();
         SetStatus();
 
+        musicManager.MusicSource.time = 0;
         musicManager.CurrentIdMusic = idMusic;
     }
 
@@ -102,11 +111,39 @@ public class PlayMusic : MonoBehaviour
     {
         musicManager.NameMusic.text = nameMusic.text;
         musicManager.NameMusicStatus.text = nameMusic.text;
-        musicManager.GroupingMusic.text = groupingMusic.text;
+        musicManager.ArtistsMusic.text = artistsMusic.text;
         musicManager.AlbumMusic.text = albumText;
         musicManager.GenresMusic.text = genresText;
         musicManager.PicturesMusic.texture = picturesImage;
         musicManager.LyricsMusic.text = lyricsText;
     }
 
+    public void DeleteMusic()
+    {
+        if (musicManager.CurrentIdMusic == idMusic)
+        {
+            musicManager.MusicSource.time = 0;
+            musicManager.MusicSource.clip = null;
+            musicManager.NameMusic.text = "Sem Nome";
+            musicManager.NameMusicStatus.text = "Sem Nome";
+            musicManager.ArtistsMusic.text = "Sem Artista";
+            musicManager.AlbumMusic.text = "Sem Album";
+            musicManager.GenresMusic.text = "Sem Gênero";
+            musicManager.PicturesMusic.texture = musicManager.SemImagem;
+            musicManager.LyricsMusic.text = "Sem Letra";
+        }
+
+        print("remover");
+
+        musicManager.MusicPlaylist.Remove(this);
+
+        for (int i = idMusic; i < musicManager.MusicPlaylist.Count; i++)
+        {
+            print(musicManager.MusicPlaylist[i].idMusic);
+            musicManager.MusicPlaylist[i].idMusic -= 1;
+        }
+        StartCoroutine(Main.instance.Web.DeleteMusic(arquivo));
+
+        Destroy(gameObject);
+    }
 }
